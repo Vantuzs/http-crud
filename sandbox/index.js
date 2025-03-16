@@ -11,13 +11,12 @@ const db = {
 
 };
 
-const filleNames = fs.readdirSync(__dirname)
-const filtredArray = filleNames.filter((a)=> /.js/.test(a) && a !== currentFileName);
-
-filtredArray.forEach(currentFile => {
+fs.readdirSync(__dirname)
+.filter((a)=> /.js/.test(a) && a !== currentFileName)
+.forEach(currentFile => {
     const absPathToFile = path.resolve(__dirname,currentFile);
     
     const Model = require(absPathToFile);
     Model._client = client;
-    db[Model._tableName] = Model;
+    db[Model.name] = Model;
 })
