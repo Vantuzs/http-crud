@@ -21,6 +21,6 @@ module.exports.basicErrorHandler = (err, req, res, next) => {
   }
 
   if(err instanceof NotFoundError){
-    return res.status(405).send(err.message)
+    return res.status(404).send(err.message)
   }
 }

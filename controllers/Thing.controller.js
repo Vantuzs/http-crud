@@ -1,4 +1,5 @@
 const { Thing } = require('../models/index');
+const NotFoundError = require('../errors/NotFoundError')
 
 module.exports.createThing = async (req, res, next) => {
   const { body } = req;
@@ -37,7 +38,7 @@ module.exports.getOne = async(req, res, next) => {
     if(thing.length > 0) {
       return res.status(200).send(thing);
     } else {
-      return res.status(404).end();
+      throw new NotFoundError();
     }
 
   } catch (error) {
