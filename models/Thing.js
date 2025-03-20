@@ -1,89 +1,104 @@
+const DataBaseError = require('../errors/DataBaseError');
+
 class Thing {
-    static _tableName = 'things'
+    static _tableName = 'things';
     static _client;
-    static name = 'Thing'
+    static name = 'Thing';
 
     static _attributes = {
-        body: 'string'
-    }
+        body: 'string',
+    };
 
     static async create(insertValues) {
-        // 1. Отсеяли "левые" атрибуты, которых мы не ожидаем
+        // 1. Відсіяли "ліві" атрибути, яких ми не очікуємо
         const insertAttr = Object.entries(this._attributes)
-        .filter(([attr,domein])=>attr in insertValues)
-        .map(([attr])=>attr);
+            .filter(([attr, domain]) => attr in insertValues)
+            .map(([attr]) => attr);
 
-        // 2. К каждому атрибуту, приклеевае кавычки и запятую в конце
-        // Делаем строчку, которая определяет столбци которые мы вставляем и порядок в котором мы эли столбцы будем передавать.
-        const insertSchema = insertAttr.map(currentAttr => `"${currentAttr}"`).join(',');
+        // 2. До кожного атрибута доклеюємо кавички і додаємо кому в кінці
+        // Робимо строку, яка визначає стовпці, які ми вставляємо та порядок, в якому ми ці стовпці будемо передавати
+        const insertSchema = insertAttr
+            .map((currentAttr) => `"${currentAttr}"`)
+            .join(',');
 
-        // 3. Делаем строчку запроса на создание, обертая ее в одинарные кавычки
-        const insertValuesStr = insertAttr.map(currentAttr => {
-            const value = insertValues[currentAttr];
-            // Если лежит строка - обворачиваем ее в кавычки
-            // Если лежит не строка - не обертаем ее в кавычки
-            return typeof value === 'string' ? `'${value}'`: value;
-        }).join(',');
+        // 3. Робимо строчку запиту на створення, огортаючи її в одинарні лапки
+        const insertValueStr = insertAttr
+            .map((currentAttr) => {
+                const value = insertValues[currentAttr];
+                // Якщо лежить строка - загортаємо її в кавички
+                // Якщо лежить не строчка - не загортаємо її в кавички
+                return typeof value === 'string' ? `'${value}'` : value;
+            })
+            .join(',');
 
-        // 4. Непосретсвенно сам запрос к БД
+        // 4. Безпосередньо сам запит до БД
         const queryStr = `
-            INSERT INTO ${this._tableName} (${insertSchema})
-            VALUES (${insertValuesStr})
-            RETURNING *;
+        INSERT INTO ${this._tableName} (${insertSchema})
+        VALUES (${insertValueStr})
+        RETURNING *;
         `;
 
-        // 5. выпоняем
-        const {rows} = await this._client.query(queryStr)
+        // 5. Виконуємо запит
+        const { rows } = await this._client.query(queryStr);
+
         return rows;
+    }
 
-    };
     static async findByPk(pk) {
-        const {rows} = await this._client.query(`
-            SELECT * FROM ${this._tableName}
-            WHERE id = ${pk};
-        `);
+        // const { rows } = await this._client.query(`
+        // SELECT * FROM ${this._tableName}
+        // WHERE id = ${pk}; 
+        // `);
 
-            return rows;
-    };
+        // return rows;
+
+        throw new DataBaseError();
+    }
 
     static async findAll() {
-        const {rows} = await this._client.query(`
-            SELECT * FROM ${this._tableName}
-        `);
+        // const { rows } = await this._client.query(`
+        // SELECT * FROM ${this._tableName};
+        // `);
 
-        return rows; 
-    };
+        // return rows;
 
-    static async updateByPk({id,updateValues}) {
+        throw new RangeError('Range error!');
+    }
+
+    static async updateByPk({ id, updateValues }) {
         const insertAttr = Object.entries(this._attributes)
-        .filter(([attr,domain]) => attr in updateValues)
-        .map((attr)=> attr);
+            .filter(([attr, domain]) => attr in updateValues)
+            .map(([attr]) => attr);
 
-        const insertValueStr = insertAttr.map(attr => {
-            const value = updateValues[attr];
+        const insertValueStr = insertAttr
+            .map((attr) => {
+                const value = updateValues[attr];
 
-            return `${attr} = ${typeof value === 'string' ? `'${value}'`: value}`
-        }).join(',');
+                return `${attr} = ${
+                    typeof value === 'string' ? `'${value}'` : value
+                }`;
+            })
+            .join(',');
 
-        const {rows} = await this._client.query(`
-            UPDATE ${this._tableName}
-            SET ${insertValueStr}
-            WHERE id = ${id}
-            RETURNING *;    
-        `);
-
-        return rows
-    };
-
-    static async deleteByPk(pk) {
-        const {rows} = await this._client.query(`
-            DELETE FROM ${this._tableName} 
-            WHERE id = ${pk};    
-            RETURNING *
+        const { rows } = await this._client.query(`
+        UPDATE ${this._tableName}
+        SET ${insertValueStr}
+        WHERE id = ${id}
+        RETURNING *;
         `);
 
         return rows;
-    };
+    }
+
+    static async deleteByPk(pk) {
+        const { rows } = await this._client.query(`
+        DELETE FROM ${this._tableName}
+        WHERE id = ${pk}
+        RETURNING *;
+        `);
+
+        return rows;
+    }
 }
 
 module.exports = Thing;
